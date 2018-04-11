@@ -94,7 +94,8 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void botAvancarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botAvancarActionPerformed
-        PetriSim.createPetriNet(inputJson.getText());
+        PetriSim petri = new PetriSim();
+        petri.createPetriNet(inputJson.getText());
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));        
     }//GEN-LAST:event_botAvancarActionPerformed
 

@@ -1,0 +1,40 @@
+{
+  "lugares": [
+    
+    {
+      "label":"L1",
+      "marcas":1
+    },
+    
+    {
+      "label":"L2",
+      "marcas":0
+    }
+    
+  ],
+  
+  "transicoes":[
+    
+    {
+      "label":"T1"
+    }
+    
+  ],
+  
+  "arcos":[
+    
+    {
+      "entrada":"L1",
+      "saida":"T1",
+      "peso":1
+    },
+    
+    { 
+      "entrada":"T1",
+      "saida":"L2",
+      "peso":1
+    }
+    
+  ] 
+  
+}

@@ -7,9 +7,7 @@ public class Arco {
     private Entidade saida;
     private int peso;
 
-    public Arco(Entidade entrada, Entidade saida, int peso) {
-        this.entrada = entrada;
-        this.saida = saida;
+    public Arco(int peso) {
         this.peso = peso;
     }
 
