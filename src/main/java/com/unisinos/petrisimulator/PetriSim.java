@@ -41,5 +41,7 @@ public class PetriSim {
             int peso = arcObj.get("peso").getAsInt();
             net.createArch(entrada, saida, peso);
         }
-     }    
+        
+        net.habDesTransicoes();
+     }
 }

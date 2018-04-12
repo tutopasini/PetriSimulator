@@ -22,7 +22,7 @@ public class PetriNet {
      * @param peso Peso do arco
      */
     public void createArch (String entrada, String saida, int peso){
-        boolean foundEntrada = true, foundSaida = false;
+        boolean foundEntrada = false, foundSaida = false;
         Arco a = new Arco(peso);
         arcos.add(a);
         for (Lugar l : lugares) {
@@ -40,14 +40,44 @@ public class PetriNet {
         for (Transicao t : transicoes) {
             if (entrada.equals(t.getLabel()) && !foundEntrada){
                 a.setEntrada(t);
+                t.addSaida(a);
                 break;            }
             if (saida.equals(t.getLabel()) && !foundSaida){
                 a.setSaida(t);
+                t.addEntrada(a);
                 break;
             }
         }
+
     }
 
+    /**
+     * Habilida/desabilita transições
+     * 
+     */
+    public void habDesTransicoes () {
+        // Percorre transições
+        for (Transicao transicao : transicoes) {
+            // Percore entradas da transição
+            for (Arco entrada : transicao.getEntradas()) {
+                // Se peso do arco de entrada for maior que a quantidade de marcas do lugar de entrada
+                if (entrada.getPeso() > ((Lugar) entrada.getEntrada()).getMarcas()) {
+                    // Desabilita transição
+                    transicao.setHabil(false);
+                    break;
+                }
+            }
+        }
+    }
+    
+    
+    public void step (){
+
+    }
+
+    //private List<Arco> getArcosTransicao (Transicao t) {
+        
+   // }
 
     public List<Lugar> getLugares() {
         return lugares;
