@@ -72,12 +72,23 @@ public class PetriNet {
     
     
     public void step (){
-
+        // Percorre transições
+        transicoes.stream().filter((transicao) -> (transicao.isHabil())).map((transicao) -> {
+            // Percorre arcos de entrada
+            List<Arco> entradas = transicao.getEntradas();
+            entradas.forEach((entrada) -> {
+                // Decrementa cada lugar de entrada com o peso do arco
+                ((Lugar) entrada.getEntrada()).decMarca(entrada.getPeso());
+            });
+            List<Arco> saidas = transicao.getSaidas();
+            return saidas;
+        }).forEachOrdered((saidas) -> {
+            saidas.forEach((saida) -> {
+                // Incrementa cada lugar de saída com o peso do arco
+                ((Lugar) saida.getSaida()).incMarca(saida.getPeso());
+            });
+        }); 
     }
-
-    //private List<Arco> getArcosTransicao (Transicao t) {
-        
-   // }
 
     public List<Lugar> getLugares() {
         return lugares;
