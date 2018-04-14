@@ -1,24 +1,22 @@
 package com.unisinos.petrisimulator;
 
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileReader;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author tuto_
  */
 public class MainWindow extends javax.swing.JFrame {
+
+    private PetriNet petri;
 
     /**
      * Creates new form MainWindow
@@ -36,11 +34,12 @@ public class MainWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileChooser = new javax.swing.JFileChooser();
         botAvancar = new javax.swing.JButton();
         botCancelar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         inputJson = new javax.swing.JTextArea();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        outputTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PetriSim");
@@ -52,7 +51,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        botCancelar.setText("Cancelar");
+        botCancelar.setText("Fechar");
         botCancelar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 botCancelarActionPerformed(evt);
@@ -63,27 +62,43 @@ public class MainWindow extends javax.swing.JFrame {
         inputJson.setRows(5);
         jScrollPane1.setViewportView(inputJson);
 
+        outputTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        outputTable.setColumnSelectionAllowed(true);
+        outputTable.setEnabled(false);
+        outputTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane2.setViewportView(outputTable);
+        outputTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 292, Short.MAX_VALUE)
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(botCancelar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(botAvancar))
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botAvancar)
                     .addComponent(botCancelar))
@@ -94,9 +109,44 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void botAvancarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botAvancarActionPerformed
-        PetriSim petri = new PetriSim();
-        petri.createPetriNet(inputJson.getText());
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));        
+        if (petri == null) {
+            inputJson.setEnabled(false);
+            petri = new PetriNet(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            try {
+                petri.createPetriNet(inputJson.getText());
+            } catch (Exception e) {
+                System.out.println("Erro ao criar a rede de Petri. Verifique se a entrada está correta!");
+            }
+            DefaultTableModel tableModel = new DefaultTableModel();
+            tableModel.addColumn("Ciclo");
+            petri.getLugares().forEach((l) -> {
+                tableModel.addColumn(l.getLabel());
+            });
+            petri.getTransicoes().forEach((t) -> {
+                tableModel.addColumn(t.getLabel());
+            });
+            outputTable.setModel(tableModel);
+        } else {
+            if (petri.isFinished()) {
+                botAvancar.setEnabled(false);
+                return;
+            }
+            petri.step();
+        }
+        DefaultTableModel tableModel = (DefaultTableModel) outputTable.getModel();
+        ArrayList<Integer> row = new ArrayList<>();
+        row.add(petri.getCiclo());
+        petri.getLugares().forEach((l) -> {
+            row.add(l.getMarcas());
+        });
+        petri.getTransicoes().forEach((t) -> {
+            if (t.isHabil()) {
+                row.add(1);
+            } else {
+                row.add(0);
+            }
+        });
+        tableModel.addRow(row.toArray());
     }//GEN-LAST:event_botAvancarActionPerformed
 
     private void botCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botCancelarActionPerformed
@@ -142,8 +192,9 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton botAvancar;
     private javax.swing.JButton botCancelar;
-    private javax.swing.JFileChooser fileChooser;
     private javax.swing.JTextArea inputJson;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable outputTable;
     // End of variables declaration//GEN-END:variables
 }
