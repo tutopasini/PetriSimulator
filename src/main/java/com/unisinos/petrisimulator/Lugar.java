@@ -1,5 +1,9 @@
 package com.unisinos.petrisimulator;
 
+/**
+ *
+ * @author augustopasini
+ */
 public class Lugar extends Entidade {
     
     private int marcas;

@@ -3,6 +3,10 @@ package com.unisinos.petrisimulator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * @author augustopasini
+ */
 public class Transicao extends Entidade {
     
     private List<Arco> saidas;

@@ -1,6 +1,9 @@
-
 package com.unisinos.petrisimulator;
 
+/**
+ *
+ * @author augustopasini
+ */
 public class Arco {
     
     private Entidade entrada;

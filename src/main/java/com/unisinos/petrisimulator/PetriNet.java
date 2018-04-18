@@ -6,6 +6,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.List;
 
+/**
+ *
+ * @author augustopasini
+ */
 public class PetriNet {
     
     private List<Lugar> lugares;
@@ -111,7 +115,10 @@ public class PetriNet {
         }
     }
     
-    
+    /**
+     * Executa um ciclo
+     *
+     */
     public void step (){
         if (finished)
             return;
