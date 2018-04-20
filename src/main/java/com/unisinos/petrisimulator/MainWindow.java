@@ -1,12 +1,23 @@
 package com.unisinos.petrisimulator;
 
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.table.DefaultTableModel;
+import org.apache.commons.io.FileUtils;
 
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 /**
  *
- * @author augustopasini
+ * @author tuto_
  */
 public class MainWindow extends javax.swing.JFrame {
 
@@ -28,15 +39,22 @@ public class MainWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileChooser = new javax.swing.JFileChooser();
         botAvancar = new javax.swing.JButton();
         botCancelar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         inputJson = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         outputTable = new javax.swing.JTable();
+        botFile = new javax.swing.JButton();
+        botSave = new javax.swing.JButton();
+        botReset = new javax.swing.JButton();
+
+        fileChooser.setPreferredSize(new java.awt.Dimension(814, 597));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PetriSim");
+        setLocation(new java.awt.Point(500, 200));
 
         botAvancar.setText("Avançar");
         botAvancar.addActionListener(new java.awt.event.ActionListener() {
@@ -70,6 +88,27 @@ public class MainWindow extends javax.swing.JFrame {
         jScrollPane2.setViewportView(outputTable);
         outputTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
+        botFile.setText("Ler arquivo");
+        botFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botFileActionPerformed(evt);
+            }
+        });
+
+        botSave.setText("Salvar rede");
+        botSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botSaveActionPerformed(evt);
+            }
+        });
+
+        botReset.setText("Resetar");
+        botReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botResetActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -77,25 +116,34 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addContainerGap()
+                        .addComponent(botFile)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(botSave)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(botCancelar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(botReset)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(botAvancar))
                     .addComponent(jScrollPane1)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botAvancar)
-                    .addComponent(botCancelar))
+                    .addComponent(botCancelar)
+                    .addComponent(botFile)
+                    .addComponent(botSave)
+                    .addComponent(botReset))
                 .addContainerGap())
         );
 
@@ -103,33 +151,44 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void botAvancarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botAvancarActionPerformed
+        // Se ainda não criou a rede
         if (petri == null) {
+            // Desabilita entrada de dados
             inputJson.setEnabled(false);
+            botFile.setEnabled(false);
+            // Cria nova rede vazia
             petri = new PetriNet(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             try {
+                // Preenche rede com dados da entrada
                 petri.createPetriNet(inputJson.getText());
             } catch (Exception e) {
                 System.out.println("Erro ao criar a rede de Petri. Verifique se a entrada está correta!");
             }
+            // Adiciona colunas para os lugares e transições
             DefaultTableModel tableModel = new DefaultTableModel();
             tableModel.addColumn("Ciclo");
             petri.getLugares().forEach((l) -> {
-                tableModel.addColumn(l.getLabel());
+                tableModel.addColumn(l.getLabel() + " (" + l.getTempo() + "Z)");
             });
             petri.getTransicoes().forEach((t) -> {
                 tableModel.addColumn(t.getLabel());
             });
             outputTable.setModel(tableModel);
+        // Se já criou a rede
         } else {
+            // Se finalizou a execução
             if (petri.isFinished()) {
+                // Desabilita botão de avançar e habilita botão de salvar
                 botAvancar.setEnabled(false);
                 return;
             }
+            // Realiza novo ciclo
             petri.step();
         }
+        // Adiciona nova linha na tabela
         DefaultTableModel tableModel = (DefaultTableModel) outputTable.getModel();
         ArrayList<Integer> row = new ArrayList<>();
-        row.add(petri.getCiclo());
+        row.add(petri.getCicloTotal());
         petri.getLugares().forEach((l) -> {
             row.add(l.getMarcas());
         });
@@ -147,6 +206,38 @@ public class MainWindow extends javax.swing.JFrame {
         // Fecha janela
         this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }//GEN-LAST:event_botCancelarActionPerformed
+
+    private void botFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botFileActionPerformed
+        int val = fileChooser.showOpenDialog(this);
+        if (val == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try {
+                inputJson.setText(FileUtils.readFileToString(file));
+            } catch (IOException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_botFileActionPerformed
+
+    private void botSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botSaveActionPerformed
+        int val = fileChooser.showSaveDialog(this);
+        if (val == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try {
+                FileUtils.writeStringToFile(file, inputJson.getText());
+            } catch (IOException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_botSaveActionPerformed
+
+    private void botResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botResetActionPerformed
+        petri = null;
+        inputJson.setEnabled(true);
+        botAvancar.setEnabled(true);
+        botFile.setEnabled(true);
+        outputTable.setModel(new DefaultTableModel());
+    }//GEN-LAST:event_botResetActionPerformed
 
     /**
      * @param args the command line arguments
@@ -186,6 +277,10 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton botAvancar;
     private javax.swing.JButton botCancelar;
+    private javax.swing.JButton botFile;
+    private javax.swing.JButton botReset;
+    private javax.swing.JButton botSave;
+    private javax.swing.JFileChooser fileChooser;
     private javax.swing.JTextArea inputJson;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

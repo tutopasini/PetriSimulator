@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,14 +16,14 @@ public class PetriNet {
     private List<Lugar> lugares;
     private List<Transicao> transicoes;
     private List<Arco> arcos;
-    private int ciclo;
+    private int cicloTotal;
     private boolean finished;
 
     public PetriNet(List<Lugar> lugares, List<Transicao> transicoes, List<Arco> arcos) {
         this.lugares = lugares;
         this.transicoes = transicoes;
         this.arcos = arcos;
-        ciclo = 0;
+        cicloTotal = 0;
         finished = false;
     }
     
@@ -35,7 +36,7 @@ public class PetriNet {
         // Cria nova rede de Petri
         Gson json = new Gson();
         JsonParser parser = new JsonParser();
-        JsonObject obj = parser.parse(inputJson).getAsJsonObject();
+         JsonObject obj = parser.parse(inputJson).getAsJsonObject();
         // Monta os lugares a partir do Json
         JsonArray lista = obj.getAsJsonArray("lugares");
         for (int i = 0; i < lista.size(); i++) {
@@ -73,11 +74,13 @@ public class PetriNet {
         for (Lugar l : lugares) {
             if (entrada.equals(l.getLabel())){
                 a.setEntrada(l);
+                l.addSaida(a);
                 foundEntrada = true;
                 break;
             }
             if (saida.equals(l.getLabel())){
                 a.setSaida(l);
+                l.addEntrada(a);
                 foundSaida = true;
                 break;
             }
@@ -115,30 +118,59 @@ public class PetriNet {
         }
     }
     
+    private void habDesTransicao(Transicao t) {
+        for (Arco entrada : t.getEntradas()) {
+            // Se peso do arco de entrada for maior que a quantidade de marcas do lugar de entrada
+            if (entrada.getPeso() > ((Lugar) entrada.getEntrada()).getMarcas()) {
+                // Desabilita transição
+                t.setHabil(false);
+                break;
+            }
+        }
+    }
+    
     /**
-     * Executa um ciclo
-     *
+     * Executa um ciclo da rede
      */
     public void step (){
         if (finished)
             return;
+        cicloTotal++;        
+        // Embaralha as transições para que pegue as transições de forma aleatório
+        Collections.shuffle(transicoes);
         // Percorre transições
-        transicoes.stream().filter((transicao) -> (transicao.isHabil())).map((transicao) -> {
+        for (Transicao transicao : transicoes) {
+            habDesTransicao(transicao);
+            boolean allDone = true;
             // Percorre arcos de entrada
             List<Arco> entradas = transicao.getEntradas();
-            entradas.forEach((entrada) -> {
-                // Decrementa cada lugar de entrada com o peso do arco
-                ((Lugar) entrada.getEntrada()).decMarca(entrada.getPeso());
-            });
-            List<Arco> saidas = transicao.getSaidas();
-            return saidas;
-        }).forEachOrdered((saidas) -> {
-            saidas.forEach((saida) -> {
-                // Incrementa cada lugar de saída com o peso do arco
-                ((Lugar) saida.getSaida()).incMarca(saida.getPeso());
-            });
-        });
-        ciclo++;
+            for (Arco entrada : entradas) {
+                Lugar lugEntrada = (Lugar) entrada.getEntrada();
+                if (lugEntrada.getTempo() > transicao.getCicloAtual()) {
+                    allDone = false;
+                    break;
+                }
+            }
+            if (allDone)
+                transicao.setCicloAtual(0);
+            else {
+                transicao.incCicloAtual();
+                continue;
+            }
+                
+            if (transicao.isHabil()) {
+                // Percorre arcos de entrada
+                entradas.forEach((entrada) -> {
+                    // Decrementa cada lugar de entrada com o peso do arco
+                    ((Lugar) entrada.getEntrada()).decMarca(entrada.getPeso());
+                });
+                List<Arco> saidas = transicao.getSaidas();
+                saidas.forEach((saida) -> {
+                    // Incrementa cada lugar de saída com o peso do arco
+                    ((Lugar) saida.getSaida()).incMarca(saida.getPeso());
+                });
+            }
+        }
         this.habDesTransicoes();
     }
     
@@ -166,12 +198,12 @@ public class PetriNet {
         this.arcos = arcos;
     }
 
-    public int getCiclo() {
-        return ciclo;
+    public int getCicloTotal() {
+        return cicloTotal;
     }
     
-    public void setCiclo(int ciclo) {
-        this.ciclo = ciclo;
+    public void setCicloTotal(int cicloTotal) {
+        this.cicloTotal = cicloTotal;
     }
 
     public boolean isFinished() {
