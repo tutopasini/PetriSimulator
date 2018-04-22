@@ -54,7 +54,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PetriSim");
-        setLocation(new java.awt.Point(500, 200));
+        setLocation(new java.awt.Point(500, 50));
 
         botAvancar.setText("Avançar");
         botAvancar.addActionListener(new java.awt.event.ActionListener() {
@@ -167,6 +167,7 @@ public class MainWindow extends javax.swing.JFrame {
             // Adiciona colunas para os lugares e transições
             DefaultTableModel tableModel = new DefaultTableModel();
             tableModel.addColumn("Ciclo");
+            tableModel.addColumn("Relógio");
             petri.getLugares().forEach((l) -> {
                 tableModel.addColumn(l.getLabel() + " (" + l.getTempo() + "Z)");
             });
@@ -174,21 +175,16 @@ public class MainWindow extends javax.swing.JFrame {
                 tableModel.addColumn(t.getLabel());
             });
             outputTable.setModel(tableModel);
-        // Se já criou a rede
+            // Se já criou a rede
         } else {
-            // Se finalizou a execução
-            if (petri.isFinished()) {
-                // Desabilita botão de avançar e habilita botão de salvar
-                botAvancar.setEnabled(false);
-                return;
-            }
             // Realiza novo ciclo
             petri.step();
         }
         // Adiciona nova linha na tabela
         DefaultTableModel tableModel = (DefaultTableModel) outputTable.getModel();
         ArrayList<Integer> row = new ArrayList<>();
-        row.add(petri.getCicloTotal());
+        row.add(petri.getCiclo());
+        row.add(petri.getRelogio());
         petri.getLugares().forEach((l) -> {
             row.add(l.getMarcas());
         });
@@ -200,6 +196,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         tableModel.addRow(row.toArray());
+        // Se finalizou a execução
+        if (petri.isFinished()) {
+            // Desabilita botão de avançar
+            botAvancar.setEnabled(false);
+        }
     }//GEN-LAST:event_botAvancarActionPerformed
 
     private void botCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botCancelarActionPerformed
