@@ -188,13 +188,19 @@ public class MainWindow extends javax.swing.JFrame {
         petri.getLugares().forEach((l) -> {
             row.add(l.getMarcas());
         });
-        petri.getTransicoes().forEach((t) -> {
-            if (t.isHabil()) {
-                row.add(1);
-            } else {
-                row.add(0);
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            for (Transicao t : petri.getTransicoes()) {
+                if (t.getLabel().equals(tableModel.getColumnName(i))) {
+                    if (t.isHabil()) {
+                        row.add(1);
+                    } else {
+                        row.add(0);
+                    }
+                    break;
+                }
             }
-        });
+        }
+
         tableModel.addRow(row.toArray());
         // Se finalizou a execução
         if (petri.isFinished()) {
