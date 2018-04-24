@@ -53,7 +53,10 @@ public class PetriNet {
             JsonObject arcObj = lista.get(i).getAsJsonObject();
             String entrada = arcObj.get("entrada").getAsString();
             String saida = arcObj.get("saida").getAsString();
-            int peso = arcObj.get("peso").getAsInt();
+            int peso = 1;
+            if (arcObj.has("peso")) {
+                peso = arcObj.get("peso").getAsInt();
+            }
             this.createArch(entrada, saida, peso);
         }
 
@@ -161,6 +164,8 @@ public class PetriNet {
                     // Incrementa cada lugar de saída com o peso do arco
                     ((Lugar) saida.getSaida()).incMarca(saida.getPeso());
                 });
+                //
+                System.out.println("Disparou a transição: " + transicao.getLabel());
             }
         }
         // Habilita/desabilita todas as transições
@@ -170,7 +175,7 @@ public class PetriNet {
             lugar.setDone(false);
         });
     }
-    
+
     public boolean isFinished() {
         return transicoes.stream().noneMatch((t) -> (t.isHabil()));
     }
@@ -206,7 +211,7 @@ public class PetriNet {
     public void setCiclo(int ciclo) {
         this.ciclo = ciclo;
     }
-    
+
     public int getRelogio() {
         return relogio;
     }
